@@ -3,5 +3,6 @@
 
     <string name="app_name">Journal IBS</string>
     <string name="title_meal_detail">Détails du repas</string>
+    <string name="action_add">Ajouter</string>
 
 </resources>
