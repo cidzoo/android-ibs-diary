@@ -1,17 +1,11 @@
 package ch.cidzoo.journalibs;
 
-import java.io.IOException;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.location.Address;
-import android.location.Criteria;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -23,12 +17,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
 import ch.cidzoo.journalibs.db.DaoMaster;
 import ch.cidzoo.journalibs.db.DaoMaster.DevOpenHelper;
 import ch.cidzoo.journalibs.db.DaoSession;
-import ch.cidzoo.journalibs.db.IngredientDao;
+import ch.cidzoo.journalibs.db.LocationCoords;
+import ch.cidzoo.journalibs.db.LocationCoordsDao;
 import ch.cidzoo.journalibs.db.Meal;
 import ch.cidzoo.journalibs.db.MealDao;
 
@@ -54,9 +47,8 @@ public class MealListFragment extends ListFragment {
 	private SQLiteDatabase db;
 	private DaoMaster daoMaster;
 	private DaoSession daoSession;
-	private IngredientDao ingredientDao;
 	private MealDao mealDao;
-	private Cursor cursor;
+	private LocationCoordsDao locationCoordsDao;
 
 	/**
 	 * The serialization (saved instance state) Bundle key representing the
@@ -118,38 +110,7 @@ public class MealListFragment extends ListFragment {
 		daoSession = daoMaster.newSession();
 		mealDao = daoSession.getMealDao();
 
-		String dateColumn = MealDao.Properties.Date.columnName;
-		String orderBy = dateColumn + " COLLATE LOCALIZED ASC";
-		cursor = db.query(mealDao.getTablename(), mealDao.getAllColumns(), null, null, null, null, orderBy);
-
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(
-				this.getActivity(), 
-				android.R.layout.simple_list_item_2, 
-				cursor, 
-				new String[] { dateColumn, MealDao.Properties.Location.columnName },
-				new int[] { android.R.id.text1, android.R.id.text2 }, 
-				SimpleCursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
-		
-		adapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-			
-			@Override
-			public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-				switch (view.getId()) {
-				case android.R.id.text1:
-					Log.i("setViewValue", cursor.getColumnName(columnIndex));
-					String dateStr = new Date(cursor.getLong(columnIndex)).toString();
-					((TextView) view).setText(dateStr);
-					break;
-
-				case android.R.id.text2:
-					Log.i("setViewValue", cursor.getColumnName(columnIndex));
-					((TextView) view).setText(cursor.getBlob(columnIndex).toString());
-					break;
-				}
-				
-				return true;
-			}
-		});
+		MealAdapter adapter = new MealAdapter(this.getActivity(), mealDao.loadAll());
 
 		setListAdapter(adapter);
 
@@ -194,19 +155,16 @@ public class MealListFragment extends ListFragment {
 					double lon = location.getLongitude();
 
 					Log.i("onLocationChanged", "got a location update: lat=" + lat + " / lon=" + lon);
-
-					Geocoder gc = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
-					try {
-						List<Address> addresses = gc.getFromLocation(lat, lon, 1);
-						Address adr = addresses.get(0);
-						String buf = new String(adr.getCountryName() + ", " + adr.getLocality() + ", " + adr.getAddressLine(0));
-						Meal meal = new Meal(null, new Date(), buf.getBytes());
-						mealDao.insert(meal);
-						cursor.requery();
-					} catch (IOException e) {
-						Log.i("onLocationChanged", "unknown location");
-					}
-
+					
+					//FIXME: null pointer
+//					LocationCoords loc = new LocationCoords(null, lat, lon);
+//					locationCoordsDao.insert(loc);
+//					Log.d("onLocationChanged", "Inserted new coord, ID: " + loc.getId());
+					
+					Meal meal = new Meal(null, new Date(), null);
+					mealDao.insert(meal);
+					Log.d("onLocationChanged", "Inserted new meal, ID: " + meal.getId());
+					((MealAdapter)getListAdapter()).updateMeals(mealDao.loadAll());
 				}
 			}, null);
 
@@ -214,7 +172,7 @@ public class MealListFragment extends ListFragment {
 			break;
 		}
 		
-
+		
 		return super.onOptionsItemSelected(item);
 	}
 

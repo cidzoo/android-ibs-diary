@@ -1,3 +1,6 @@
+# generated database source files
+JournalIBS/src/ch/cidzoo/journalibs/db/
+
 # drawables (tmp, during dev.)
 JournalIBS/res/drawable-*/
 

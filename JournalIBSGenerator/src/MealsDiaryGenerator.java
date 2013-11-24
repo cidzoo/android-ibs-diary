@@ -1,5 +1,3 @@
-import java.awt.Image;
-
 import de.greenrobot.daogenerator.DaoGenerator;
 import de.greenrobot.daogenerator.Entity;
 import de.greenrobot.daogenerator.Property;
@@ -31,17 +29,21 @@ public class MealsDiaryGenerator {
 	
 	private static void addIngredient(Schema schema) {
 		Entity ingr = schema.addEntity("Ingredient");
-		
 		ingr.addIdProperty();
 		ingr.addStringProperty("name").notNull();
 	}
 	
 	private static void addMeal(Schema schema) {
-		Entity meal = schema.addEntity("Meal");
+		Entity loc = schema.addEntity("LocationCoords");
+		loc.addIdProperty().autoincrement();
+		loc.addDoubleProperty("latitude").notNull();
+		loc.addDoubleProperty("longitude").notNull();
 		
+		Entity meal = schema.addEntity("Meal");
 		meal.addIdProperty();
 		meal.addDateProperty("date");
-		meal.addByteArrayProperty("location");
+		Property locId = meal.addLongProperty("locationCoordsId").getProperty();
+		meal.addToOne(loc, locId);
 	}
 
 }
