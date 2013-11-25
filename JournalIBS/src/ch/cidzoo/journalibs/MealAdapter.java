@@ -61,7 +61,7 @@ public class MealAdapter extends BaseAdapter {
 	
 	@Override
 	public int getCount() {
-		Log.i("getCount", "entry, size = "+meals.size());
+		Log.i("getCount", "entry");
 		return meals.size();
 	}
 
@@ -93,11 +93,15 @@ public class MealAdapter extends BaseAdapter {
 		dateView.setText(meal.getDate().toString());
 		
 		// show the location
-		LocationCoords coord = meal.getLocationCoords();
-		if (coord != null) {
+		String buf;
+		try {
+			LocationCoords coord = meal.getLocationCoords();
 			Address adr = Toolbox.reverseGeocoding(context, coord.getLatitude(), coord.getLongitude());
-			locationView.setText(adr.getLocality() + ", " + adr.getAddressLine(0));
+			buf = adr.getLocality() + ", " + adr.getAddressLine(0);
+		} catch (Exception e) {
+			buf = "Emplacement inconnu";
 		}
+		locationView.setText(buf);
 
 		return rootView;
 	}

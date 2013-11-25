@@ -5,8 +5,12 @@ import java.util.List;
 import java.util.Locale;
 
 import ch.cidzoo.journalibs.BuildConfig;
+import ch.cidzoo.journalibs.db.DaoMaster;
+import ch.cidzoo.journalibs.db.DaoMaster.DevOpenHelper;
+import ch.cidzoo.journalibs.db.DaoSession;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Looper;
@@ -42,5 +46,18 @@ public class Toolbox {
             }
         }
     }
+
+	/**
+	 * Get a new session to access the 'meals_diary' database. Use greenDAO.
+	 * @param context needed context
+	 * @return a new DaoSession instance for the corresponding database and context
+	 */
+	public static DaoSession getDatabaseSession(Context context) {
+		DevOpenHelper helper = new DaoMaster.DevOpenHelper(context, "meals_diary", null);
+		SQLiteDatabase db = helper.getWritableDatabase();
+		helper.onUpgrade(db, db.getVersion(), db.getVersion()+1); //FIXME: devel
+		DaoMaster daoMaster = new DaoMaster(db);
+		return daoMaster.newSession();
+	}
 	
 }
