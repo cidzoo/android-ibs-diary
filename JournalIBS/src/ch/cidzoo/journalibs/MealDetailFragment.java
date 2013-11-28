@@ -5,8 +5,12 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
-import ch.cidzoo.journalibs.db.Meal;
+import android.widget.Toast;
 import ch.cidzoo.journalibs.db.MealDao;
 
 /**
@@ -38,6 +42,10 @@ public class MealDetailFragment extends Fragment {
      */
     public MealDetailFragment() {
     }
+    
+    private static final String[] COUNTRIES = new String[] {
+        "Belgium", "France", "Italy", "Germany", "Spain"
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,9 +66,27 @@ public class MealDetailFragment extends Fragment {
 
         // Show the dummy content as text in a TextView.
         if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.meal_detail)).setText(mItem);
+            //((TextView) rootView.findViewById(R.id.meal_detail)).setText(mItem);
         }
+        
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(),
+                android.R.layout.simple_dropdown_item_1line, COUNTRIES);
+        AutoCompleteTextView textView = (AutoCompleteTextView)
+                rootView.findViewById(R.id.searchIngredient);
+        textView.setAdapter(adapter);
+        textView.setOnItemClickListener(new OnItemClickListener() {
 
+            @Override
+            public void onItemClick(AdapterView<?> parent, View arg1, int pos,
+                    long id) {
+                  Toast.makeText(getActivity()," selected " + ((TextView) arg1).getText().toString(), Toast.LENGTH_LONG).show();
+                  ((TextView) arg1).setTextIsSelectable(true);
+                  ((TextView) arg1).setText("");
+                  ((TextView) arg1).clearFocus();
+            }
+            
+            
+        });
         return rootView;
     }
 }
