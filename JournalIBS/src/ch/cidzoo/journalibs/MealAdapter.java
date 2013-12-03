@@ -53,7 +53,6 @@ public class MealAdapter extends BaseAdapter {
 	}
 
 	public void updateMeals(List<Meal> meals) {
-		Log.i("updateMeals", "entry");
 		Toolbox.checkOnMainThread();
 		this.meals = meals;
 		notifyDataSetChanged();
@@ -61,25 +60,21 @@ public class MealAdapter extends BaseAdapter {
 	
 	@Override
 	public int getCount() {
-		Log.i("getCount", "entry");
 		return meals.size();
 	}
 
 	@Override
 	public Object getItem(int position) {
-		Log.i("getItem", "entry");
 		return meals.get(position);
 	}
 
 	@Override
 	public long getItemId(int position) {
-		Log.i("getItemId", "entry");
 		return position;
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		Log.i("getView", "entry");
 		View rootView = LayoutInflater.from(context)
 				.inflate(android.R.layout.simple_list_item_2, parent, false);
 
@@ -90,7 +85,7 @@ public class MealAdapter extends BaseAdapter {
 		Meal meal = (Meal) getItem(position);
 		
 		// show the date
-		dateView.setText(meal.getDate().toString());
+		dateView.setText(Toolbox.date2String(meal.getDate()) + " - " + Toolbox.time2String(meal.getDate()));
 		
 		// show the location
 		String buf;

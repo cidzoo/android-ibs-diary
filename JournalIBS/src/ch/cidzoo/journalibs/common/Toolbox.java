@@ -1,19 +1,20 @@
 package ch.cidzoo.journalibs.common;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import ch.cidzoo.journalibs.BuildConfig;
-import ch.cidzoo.journalibs.db.DaoMaster;
-import ch.cidzoo.journalibs.db.DaoMaster.DevOpenHelper;
-import ch.cidzoo.journalibs.db.DaoSession;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Looper;
+import ch.cidzoo.journalibs.BuildConfig;
+import ch.cidzoo.journalibs.db.DaoMaster;
+import ch.cidzoo.journalibs.db.DaoMaster.DevOpenHelper;
+import ch.cidzoo.journalibs.db.DaoSession;
 
 public class Toolbox {
 
@@ -55,9 +56,19 @@ public class Toolbox {
 	public static DaoSession getDatabaseSession(Context context) {
 		DevOpenHelper helper = new DaoMaster.DevOpenHelper(context, "meals_diary", null);
 		SQLiteDatabase db = helper.getWritableDatabase();
-		helper.onUpgrade(db, db.getVersion(), db.getVersion()+1); //FIXME: devel
+		//helper.onUpgrade(db, db.getVersion(), db.getVersion()+1); //FIXME: devel
 		DaoMaster daoMaster = new DaoMaster(db);
 		return daoMaster.newSession();
+	}
+	
+	public static String date2String(Date date) {
+		DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
+		return df.format(date);
+	}
+	
+	public static String time2String(Date date) {
+		DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+		return df.format(date);
 	}
 	
 }
