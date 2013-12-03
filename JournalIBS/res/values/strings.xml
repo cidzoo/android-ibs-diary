@@ -11,6 +11,7 @@
     <string name="action_show_charts">Indices</string>
     <string name="action_done">Confirmer</string>
     <string name="search_ingredient_hint">Ajouter un ingrédient</string>
+    <string name="meal_prefix">Repas du </string>
     <string name="location_prefix">Près de </string>
     <string name="symptom_name_1">Symptôme 1</string>
     <string name="symptom_name_2">Symptôme 2</string>

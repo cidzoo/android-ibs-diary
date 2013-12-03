@@ -5,7 +5,6 @@ import java.util.List;
 
 import android.content.Context;
 import android.location.Address;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,6 +58,11 @@ public class MealAdapter extends BaseAdapter {
 	}
 	
 	@Override
+	public void notifyDataSetChanged() {
+		super.notifyDataSetChanged();
+	}
+
+	@Override
 	public int getCount() {
 		return meals.size();
 	}
@@ -76,7 +80,7 @@ public class MealAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		View rootView = LayoutInflater.from(context)
-				.inflate(android.R.layout.simple_list_item_2, parent, false);
+				.inflate(android.R.layout.simple_list_item_activated_2, parent, false);
 
 		TextView dateView = (TextView) rootView.findViewById(android.R.id.text1);
 		TextView locationView = (TextView) rootView.findViewById(android.R.id.text2);
@@ -85,7 +89,11 @@ public class MealAdapter extends BaseAdapter {
 		Meal meal = (Meal) getItem(position);
 		
 		// show the date
-		dateView.setText(Toolbox.date2String(meal.getDate()) + " - " + Toolbox.time2String(meal.getDate()));
+		dateView.setText(rootView.getResources().getString(R.string.meal_prefix) +
+				" " +
+				Toolbox.date2String(meal.getDate()) + 
+				" - " + 
+				Toolbox.time2String(meal.getDate()));
 		
 		// show the location
 		String buf;

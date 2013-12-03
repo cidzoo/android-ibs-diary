@@ -1,8 +1,9 @@
 package ch.cidzoo.journalibs;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import android.app.Activity;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView.MultiChoiceModeListener;
+import android.widget.Adapter;
 import android.widget.ListView;
 import ch.cidzoo.journalibs.common.Toolbox;
 import ch.cidzoo.journalibs.db.DaoSession;
@@ -213,19 +215,25 @@ public class MealListFragment extends ListFragment {
 	
 	class MealSelectListener implements MultiChoiceModeListener {
 
+		Queue<Integer> selectedItems = new LinkedList<Integer>();
 	    @Override
 	    public void onItemCheckedStateChanged(ActionMode mode, int position,
 	                                          long id, boolean checked) {
-	        // Here you can do something when items are selected/de-selected,
-	        // such as update the title in the CAB
-	    	View item = getListView().getChildAt(position);
-	    	int previousColor = ((ColorDrawable) item.getBackground()).getColor(); 
+	        
 	    	Log.i("onItemCheckedStateChanged", "item " + position + " is selected ? " + checked);
 	    	if (checked) {
-	    		getListView().getChildAt(position).setBackgroundColor(getResources().getColor(android.R.color.holo_blue_light));
+	    		selectedItems.add(position);
 	    	} else {
-	    		getListView().getChildAt(position).setBackgroundColor(previousColor);
+	    		selectedItems.remove(position);
 	    	}
+            
+	    	mode.setTitle(String.valueOf(selectedItems.size())+" selected");
+	    	
+            /* hide or show edit action if more then one item is selected */
+            if(selectedItems.size() > 1)
+                mode.getMenu().findItem(R.id.action_edit).setVisible(false);
+            else
+                mode.getMenu().findItem(R.id.action_edit).setVisible(true);
 	    }
 
 	    @Override
@@ -234,6 +242,11 @@ public class MealListFragment extends ListFragment {
 	        switch (item.getItemId()) {
 	            case R.id.action_delete:
 	                Log.i("onActionItemClicked", "item(s) deleted");
+	                Integer index;
+	                while ((index = selectedItems.poll()) != null)
+	                	mealDao.delete((Meal) getListAdapter().getItem(index));
+	                	
+	                ((MealAdapter) getListAdapter()).updateMeals(mealDao.loadAll());
 	                mode.finish(); // Action picked, so close the CAB
 	                return true;
 	            default:
@@ -253,6 +266,7 @@ public class MealListFragment extends ListFragment {
 	    public void onDestroyActionMode(ActionMode mode) {
 	        // Here you can make any necessary updates to the activity when
 	        // the CAB is removed. By default, selected items are deselected/unchecked.
+	    	selectedItems.clear();
 	    }
 
 	    @Override
