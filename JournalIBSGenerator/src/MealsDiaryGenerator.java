@@ -1,6 +1,5 @@
 import de.greenrobot.daogenerator.DaoGenerator;
 import de.greenrobot.daogenerator.Entity;
-import de.greenrobot.daogenerator.Property;
 import de.greenrobot.daogenerator.Schema;
 
 
@@ -33,17 +32,12 @@ public class MealsDiaryGenerator {
 		ingr.addStringProperty("name").notNull();
 	}
 	
-	private static void addMeal(Schema schema) {
-		Entity loc = schema.addEntity("LocationCoords");
-		loc.addIdProperty().autoincrement();
-		loc.addDoubleProperty("latitude").notNull();
-		loc.addDoubleProperty("longitude").notNull();
-		
+	private static void addMeal(Schema schema) {	
 		Entity meal = schema.addEntity("Meal");
 		meal.addIdProperty();
 		meal.addDateProperty("date");
-		Property locId = meal.addLongProperty("locationCoordsId").getProperty();
-		meal.addToOne(loc, locId);
+		meal.addDoubleProperty("latitude");
+		meal.addDoubleProperty("longitude");
 	}
 
 }

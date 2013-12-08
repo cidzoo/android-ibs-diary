@@ -15,11 +15,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView.MultiChoiceModeListener;
-import android.widget.Adapter;
 import android.widget.ListView;
 import ch.cidzoo.journalibs.common.Toolbox;
 import ch.cidzoo.journalibs.db.DaoSession;
-import ch.cidzoo.journalibs.db.LocationCoordsDao;
 import ch.cidzoo.journalibs.db.Meal;
 import ch.cidzoo.journalibs.db.MealDao;
 
@@ -39,7 +37,6 @@ public class MealListFragment extends ListFragment {
 	 */
 	private DaoSession daoSession;
 	private MealDao mealDao;
-	private LocationCoordsDao locationCoordsDao;
 
 	/**
 	 * The serialization (saved instance state) Bundle key representing the
@@ -92,9 +89,8 @@ public class MealListFragment extends ListFragment {
 		super.onCreate(savedInstanceState);
 
 		daoSession = Toolbox.getDatabaseSession(getActivity());
-		locationCoordsDao = daoSession.getLocationCoordsDao();
 		mealDao = daoSession.getMealDao();
-
+		
 		MealAdapter adapter = new MealAdapter(this.getActivity(), mealDao.loadAll());
 		setListAdapter(adapter);
 
@@ -151,6 +147,14 @@ public class MealListFragment extends ListFragment {
 		ListView listView = getListView();
 		listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
 		listView.setMultiChoiceModeListener(new MealSelectListener());
+	}
+	
+	
+
+	@Override
+	public void onResume() {
+		((MealAdapter) getListAdapter()).updateMeals(mealDao.loadAll());
+		super.onResume();
 	}
 
 	@Override

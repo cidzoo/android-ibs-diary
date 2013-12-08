@@ -33,8 +33,6 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import ch.cidzoo.journalibs.common.Toolbox;
 import ch.cidzoo.journalibs.db.DaoSession;
-import ch.cidzoo.journalibs.db.LocationCoords;
-import ch.cidzoo.journalibs.db.LocationCoordsDao;
 import ch.cidzoo.journalibs.db.Meal;
 import ch.cidzoo.journalibs.db.MealDao;
 
@@ -62,19 +60,12 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 	 */
 	private MealDao mealDao;
 	
-	/**
-	 * 
-	 */
-	private LocationCoordsDao locationCoordsDao;
-	
     /**
      * The meal content this fragment is presenting.
      */
     private String mItem;
     
     private Meal mMeal;
-    
-    private LocationCoords mLocation;
 
 	private Button mDatePicker, mTimePicker, mLocationPicker;
 
@@ -96,11 +87,9 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
         // database stuff
         DaoSession daoSession = Toolbox.getDatabaseSession(getActivity());
         mealDao = daoSession.getMealDao();
-        locationCoordsDao = daoSession.getLocationCoordsDao();
         
         // init object with default values
-        mLocation = new LocationCoords();
-        mMeal = new Meal(null, new Date(), null);
+        mMeal = new Meal(null, new Date(), null, null);
         
         
         if (getArguments().containsKey(ARG_ITEM_ID)) {
@@ -185,9 +174,11 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 		switch(item.getItemId()) {
 		case R.id.action_done:
 			Log.i("onOptionsItemSelected", "button done clicked");
-			locationCoordsDao.insert(mLocation);
-			mMeal.setLocationCoords(mLocation);
+
+			// insert the meal into the DB
 			mealDao.insert(mMeal);
+			
+			// finish and return
 			getActivity().finish();
 			return true;
 		}
@@ -289,13 +280,13 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 
     		Log.i("onLocationChanged", "got a location update: lat=" + lat + " / lon=" + lon);
 
-    		mLocation.setLatitude(lat);
-    		mLocation.setLongitude(lon);
+    		mMeal.setLatitude(lat);
+    		mMeal.setLongitude(lon);
     		
     		mLocationPicker.setText(getString(R.string.location_prefix) + " " + 
     				Toolbox.reverseGeocoding(getActivity(), 
-    				mLocation.getLatitude(), 
-    				mLocation.getLongitude()).getAddressLine(0));
+    				mMeal.getLatitude(), 
+    				mMeal.getLongitude()).getAddressLine(0));
 
 //    		Meal meal = new Meal(null, new Date(), loc.getId());
 //    		mealDao.insert(meal);

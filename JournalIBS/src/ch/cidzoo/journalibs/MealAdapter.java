@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import ch.cidzoo.journalibs.common.Toolbox;
-import ch.cidzoo.journalibs.db.LocationCoords;
 import ch.cidzoo.journalibs.db.Meal;
 
 /**
@@ -98,8 +97,7 @@ public class MealAdapter extends BaseAdapter {
 		// show the location
 		String buf;
 		try {
-			LocationCoords coord = meal.getLocationCoords();
-			Address adr = Toolbox.reverseGeocoding(context, coord.getLatitude(), coord.getLongitude());
+			Address adr = Toolbox.reverseGeocoding(context, meal.getLatitude(), meal.getLongitude());
 			buf = adr.getLocality() + ", " + adr.getAddressLine(0);
 		} catch (Exception e) {
 			buf = "Emplacement inconnu";
