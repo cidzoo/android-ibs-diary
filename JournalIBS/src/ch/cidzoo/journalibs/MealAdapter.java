@@ -17,6 +17,8 @@ import ch.cidzoo.journalibs.db.Meal;
  * Designed following this proposed best practices for Adapters :
  * http://www.piwai.info/android-adapter-good-practices/
  * 
+ * TODO: extends CursorAdapter
+ * 
  * @author Romain Maffina
  *
  */
@@ -94,7 +96,7 @@ public class MealAdapter extends BaseAdapter {
 				" - " + 
 				Toolbox.time2String(meal.getDate()));
 		
-		// show the location
+		// show the location FIXME: it is slowing the display?
 		String buf;
 		try {
 			Address adr = Toolbox.reverseGeocoding(context, meal.getLatitude(), meal.getLongitude());

@@ -124,12 +124,6 @@ public class MealListFragment extends ListFragment {
 		
 		return super.onOptionsItemSelected(item);
 	}
-	
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
-		return super.onContextItemSelected(item);
-	}
 
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {

@@ -12,6 +12,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.Looper;
 import ch.cidzoo.journalibs.BuildConfig;
+import ch.cidzoo.journalibs.R;
 import ch.cidzoo.journalibs.db.DaoMaster;
 import ch.cidzoo.journalibs.db.DaoMaster.DevOpenHelper;
 import ch.cidzoo.journalibs.db.DaoSession;
@@ -49,12 +50,22 @@ public class Toolbox {
     }
 
 	/**
-	 * Get a new session to access the 'meals_diary' database. Use greenDAO.
+	 * Get a new database object to access the 'meals_diary' database. Uses greenDAO.
+	 * @param context
+	 * @return a new  SQLiteDatabase instance
+	 */
+	public static SQLiteDatabase getDatabase(Context context) {
+		DevOpenHelper helper = new DaoMaster.DevOpenHelper(context, context.getString(R.string.db_name), null);
+		return helper.getWritableDatabase();
+	}
+	
+	/**
+	 * Get a new session to access the 'meals_diary' database. Uses greenDAO.
 	 * @param context needed context
 	 * @return a new DaoSession instance for the corresponding database and context
 	 */
 	public static DaoSession getDatabaseSession(Context context) {
-		DevOpenHelper helper = new DaoMaster.DevOpenHelper(context, "meals_diary", null);
+		DevOpenHelper helper = new DaoMaster.DevOpenHelper(context, context.getString(R.string.db_name), null);
 		SQLiteDatabase db = helper.getWritableDatabase();
 		//helper.onUpgrade(db, db.getVersion(), db.getVersion()+1); //FIXME: devel
 		DaoMaster daoMaster = new DaoMaster(db);

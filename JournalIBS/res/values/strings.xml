@@ -1,18 +1,28 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="app_name">Journal IBS</string>
+    <string name="db_name">meals_diary</string>
+    
     <string name="choose_date">Choisir la date</string>
     <string name="choose_time">Choisir l\'heure</string>
     <string name="choose_location">Choisir le lieu</string>
-    <string name="location_pending">Localisation en cours...</string>
+    
+    <string name="location_pending" tools:ignore="TypographyEllipsis">Localisation en cours...</string>
+    <string name="location_prefix">Près de </string>
+    
     <string name="title_meal_detail">Détails du repas</string>
+    <string name="meal_prefix">Repas du </string>
+    
     <string name="action_add">Ajouter</string>
     <string name="action_edit">Modifier</string>
     <string name="action_show_charts">Indices</string>
     <string name="action_done">Confirmer</string>
-    <string name="search_ingredient_hint">Ajouter un ingrédient</string>
-    <string name="meal_prefix">Repas du </string>
-    <string name="location_prefix">Près de </string>
+    
+    <string name="ingredient_search_hint">Ajouter un ingrédient</string>
+    <string name="ingredient_added_postfix">ajouté</string>
+    <string name="ingredient_created_postfix">créé et ajouté</string>
+    
+    
     <string name="symptom_name_1">Symptôme 1</string>
     <string name="symptom_name_2">Symptôme 2</string>
     <string name="symptom_name_3">Symptôme 3</string>

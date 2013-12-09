@@ -15,16 +15,17 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -33,6 +34,8 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import ch.cidzoo.journalibs.common.Toolbox;
 import ch.cidzoo.journalibs.db.DaoSession;
+import ch.cidzoo.journalibs.db.Ingredient;
+import ch.cidzoo.journalibs.db.IngredientDao;
 import ch.cidzoo.journalibs.db.Meal;
 import ch.cidzoo.journalibs.db.MealDao;
 
@@ -60,14 +63,24 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 	 */
 	private MealDao mealDao;
 	
+	/**
+	 * Access ingredients
+	 */
+	private IngredientDao ingredientDao;
+	
+	/**
+	 * Ingredient adapter for the autoCompleteTextView
+	 */
+	private IngredientAdapter autoCompleteAdapter;
+	
     /**
      * The meal content this fragment is presenting.
      */
-    private String mItem;
-    
     private Meal mMeal;
 
 	private Button mDatePicker, mTimePicker, mLocationPicker;
+
+	private AutoCompleteTextView ingredientSearch;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -75,10 +88,6 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
      */
     public MealDetailFragment() {
     }
-    
-    private static final String[] COUNTRIES = new String[] {
-        "Belgium", "France", "Italy", "Germany", "Spain"
-    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,16 +96,17 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
         // database stuff
         DaoSession daoSession = Toolbox.getDatabaseSession(getActivity());
         mealDao = daoSession.getMealDao();
+        ingredientDao = daoSession.getIngredientDao();
         
         // init object with default values
         mMeal = new Meal(null, new Date(), null, null);
         
-        
+        // TODO: handle edit a meal
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            mItem = getArguments().getString(ARG_ITEM_ID);
+            //mItem = getArguments().getString(ARG_ITEM_ID);
         }
         
         setHasOptionsMenu(true);
@@ -105,8 +115,11 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_meal_detail, container, false);
+        
+    	View rootView = inflater.inflate(R.layout.fragment_meal_detail, container, false);
  
+        ingredientSearch = (AutoCompleteTextView) rootView.findViewById(R.id.searchIngredient);
+        
         mDatePicker = (Button) rootView.findViewById(R.id.datePicker);
         mDatePicker.setOnClickListener(this);
         mDatePicker.setText(Toolbox.date2String(mMeal.getDate()));
@@ -121,30 +134,29 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
      	locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new MyLocationListener(), null);
         		
-        // Show the dummy content as text in a TextView.
-        if (mItem != null) {
-            //((TextView) rootView.findViewById(R.id.meal_detail)).setText(mItem);
-        }
+        // prepare auto complete ingredient dropdown list (appears while typing)
+        autoCompleteAdapter = new IngredientAdapter(getActivity());
+        ingredientSearch.setAdapter(autoCompleteAdapter);
+        ingredientSearch.setOnItemClickListener(new IngredientSelectListener());
+        ingredientSearch.setOnKeyListener(new IngredientEnterKeyListener());
         
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this.getActivity(),
-                android.R.layout.simple_dropdown_item_1line, COUNTRIES);
-        AutoCompleteTextView textView = (AutoCompleteTextView)
-                rootView.findViewById(R.id.searchIngredient);
-        textView.setAdapter(adapter);
-        textView.setOnItemClickListener(new OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View arg1, int pos,
-                    long id) {
-                  Toast.makeText(getActivity()," selected " + ((TextView) arg1).getText().toString(), Toast.LENGTH_LONG).show();
-                  ((TextView) arg1).setTextIsSelectable(true);
-                  ((TextView) arg1).setText("");
-                  ((TextView) arg1).clearFocus();
-            }
-            
-            
-        });
         return rootView;
+    }
+    
+    public void addIngredient(TextView v, boolean created) {
+    	StringBuilder text = new StringBuilder(v.getText() + " ");
+    	
+    	if (created)
+    		text.append(v.getResources().getString(R.string.ingredient_created_postfix));
+    	else
+    		text.append(v.getResources().getString(R.string.ingredient_added_postfix));
+    	
+		Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
+		
+    	((TextView) v).setText("");
+    	
+    	// notify that data changed to force refresh
+    	autoCompleteAdapter.notifyDataSetInvalidated();
     }
 
 	@Override
@@ -192,7 +204,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 	 * @author romain
 	 *
 	 */
-    public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
+    class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
             @Override
             public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -223,7 +235,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
      * @author romain
      *
      */
-    public class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
+    class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
             
             @Override
             public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -253,25 +265,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
      * @author romain
      *
      */
-    public class MyLocationListener implements LocationListener{
-    	//
-    	@Override
-    	public void onStatusChanged(String provider, int status, Bundle extras) {
-    		// TODO Auto-generated method stub
-
-    	}
-
-    	@Override
-    	public void onProviderEnabled(String provider) {
-    		// TODO Auto-generated method stub
-
-    	}
-
-    	@Override
-    	public void onProviderDisabled(String provider) {
-    		// TODO Auto-generated method stub
-
-    	}
+    class MyLocationListener implements LocationListener {
 
     	@Override
     	public void onLocationChanged(Location location) {
@@ -287,11 +281,60 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
     				Toolbox.reverseGeocoding(getActivity(), 
     				mMeal.getLatitude(), 
     				mMeal.getLongitude()).getAddressLine(0));
+    	}
 
-//    		Meal meal = new Meal(null, new Date(), loc.getId());
-//    		mealDao.insert(meal);
-//    		Log.d("onLocationChanged", "Inserted new meal, ID: " + meal.getId());
-//    		((MealAdapter)getListAdapter()).updateMeals(mealDao.loadAll());
+		@Override
+		public void onProviderDisabled(String provider) {}
+
+		@Override
+		public void onProviderEnabled(String provider) {}
+
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {}
+    }
+    
+    /**
+     * OnItemClickListener for ingredient {@link AutoCompleteTextView}
+     * @author romain
+     *
+     */
+    class IngredientSelectListener implements OnItemClickListener {
+
+		@Override
+		public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+				long arg3) {
+			addIngredient((TextView) arg1, false);
+		}
+    	
+    }
+
+    class IngredientEnterKeyListener implements OnKeyListener {
+
+    	@Override
+    	public boolean onKey(View v, int keyCode, KeyEvent event) {
+    		Log.i(getTag(),"onKey");
+    		if (event.getAction() == KeyEvent.ACTION_DOWN)
+    		{
+    			switch (keyCode)
+    			{
+    			case KeyEvent.KEYCODE_DPAD_CENTER:
+    			case KeyEvent.KEYCODE_ENTER:
+
+    				// insert new ingredient
+    				ingredientDao.insert(new Ingredient(null, ((TextView) v).getText().toString()));
+    				addIngredient((TextView) v, true);
+    				// hide keyboard
+    				//		                	InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+    				//		                			Context.INPUT_METHOD_SERVICE);
+    				//		                	imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+
+    				return true;
+    			default:
+    				break;
+    			}
+    		}
+
+    		return false;
     	}
     }
     

@@ -28,6 +28,7 @@
         <activity
             android:name="ch.cidzoo.journalibs.MealDetailActivity"
             android:label="@string/title_meal_detail"
+            android:windowSoftInputMode="adjustPan"
             android:parentActivityName=".MealListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
