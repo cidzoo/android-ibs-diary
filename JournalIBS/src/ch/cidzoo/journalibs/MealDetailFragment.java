@@ -56,22 +56,22 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 	/**
 	 * Get reference on the system Location manager
 	 */
-	LocationManager locationManager;
+	LocationManager mLocManager;
 	
 	/**
 	 * Access meals
 	 */
-	private MealDao mealDao;
+	private MealDao mMealDao;
 	
 	/**
 	 * Access ingredients
 	 */
-	private IngredientDao ingredientDao;
+	private IngredientDao mIngrDao;
 	
 	/**
 	 * Ingredient adapter for the autoCompleteTextView
 	 */
-	private IngredientAdapter autoCompleteAdapter;
+	private IngrSearchAdapter mIngrSearchAdapter;
 	
     /**
      * The meal content this fragment is presenting.
@@ -80,7 +80,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 
 	private Button mDatePicker, mTimePicker, mLocationPicker;
 
-	private AutoCompleteTextView ingredientSearch;
+	private AutoCompleteTextView mIngrSearch;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -95,18 +95,18 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 
         // database stuff
         DaoSession daoSession = Toolbox.getDatabaseSession(getActivity());
-        mealDao = daoSession.getMealDao();
-        ingredientDao = daoSession.getIngredientDao();
-        
-        // init object with default values
-        mMeal = new Meal(null, new Date(), null, null);
+        mMealDao = daoSession.getMealDao();
+        mIngrDao = daoSession.getIngredientDao();
         
         // TODO: handle edit a meal
         if (getArguments().containsKey(ARG_ITEM_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
             //mItem = getArguments().getString(ARG_ITEM_ID);
+        	long selectedMealId = (long) Integer.parseInt(getArguments().getString(ARG_ITEM_ID));
+
+        	if (selectedMealId != 0)
+        		mMeal = mMealDao.load(selectedMealId);
+        	else // init object with default values
+        		mMeal = new Meal(null, new Date(), null, null);        	
         }
         
         setHasOptionsMenu(true);
@@ -118,7 +118,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
         
     	View rootView = inflater.inflate(R.layout.fragment_meal_detail, container, false);
  
-        ingredientSearch = (AutoCompleteTextView) rootView.findViewById(R.id.searchIngredient);
+        mIngrSearch = (AutoCompleteTextView) rootView.findViewById(R.id.searchIngredient);
         
         mDatePicker = (Button) rootView.findViewById(R.id.datePicker);
         mDatePicker.setOnClickListener(this);
@@ -131,14 +131,18 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
         mLocationPicker.setText(getString(R.string.location_pending));
         
         // Get the location manager
-     	locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new MyLocationListener(), null);
+        try {
+        	mLocManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        	mLocManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new MyLocationListener(), null);
+        } catch (Exception e) {
+
+        }
         		
         // prepare auto complete ingredient dropdown list (appears while typing)
-        autoCompleteAdapter = new IngredientAdapter(getActivity());
-        ingredientSearch.setAdapter(autoCompleteAdapter);
-        ingredientSearch.setOnItemClickListener(new IngredientSelectListener());
-        ingredientSearch.setOnKeyListener(new IngredientEnterKeyListener());
+        mIngrSearchAdapter = new IngrSearchAdapter(getActivity());
+        mIngrSearch.setAdapter(mIngrSearchAdapter);
+        mIngrSearch.setOnItemClickListener(new IngredientSelectListener());
+        mIngrSearch.setOnKeyListener(new IngredientEnterKeyListener());
         
         return rootView;
     }
@@ -156,7 +160,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
     	((TextView) v).setText("");
     	
     	// notify that data changed to force refresh
-    	autoCompleteAdapter.notifyDataSetInvalidated();
+    	mIngrSearchAdapter.notifyDataSetInvalidated();
     }
 
 	@Override
@@ -188,7 +192,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 			Log.i("onOptionsItemSelected", "button done clicked");
 
 			// insert the meal into the DB
-			mealDao.insert(mMeal);
+			mMealDao.insertOrReplace(mMeal);
 			
 			// finish and return
 			getActivity().finish();
@@ -294,7 +298,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
     }
     
     /**
-     * OnItemClickListener for ingredient {@link AutoCompleteTextView}
+     * Listener for adding an ingredient from {@link AutoCompleteTextView}
      * @author romain
      *
      */
@@ -308,6 +312,11 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
     	
     }
 
+    /**
+     * Listener for creating and adding a {@link Ingredient} from {@link AutoCompleteTextView}
+     * @author romain
+     *
+     */
     class IngredientEnterKeyListener implements OnKeyListener {
 
     	@Override
@@ -319,16 +328,11 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
     			{
     			case KeyEvent.KEYCODE_DPAD_CENTER:
     			case KeyEvent.KEYCODE_ENTER:
-
     				// insert new ingredient
-    				ingredientDao.insert(new Ingredient(null, ((TextView) v).getText().toString()));
+    				mIngrDao.insert(new Ingredient(null, ((TextView) v).getText().toString()));
     				addIngredient((TextView) v, true);
-    				// hide keyboard
-    				//		                	InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
-    				//		                			Context.INPUT_METHOD_SERVICE);
-    				//		                	imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-
     				return true;
+    			
     			default:
     				break;
     			}

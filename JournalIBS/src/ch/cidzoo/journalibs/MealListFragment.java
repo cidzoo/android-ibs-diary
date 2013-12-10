@@ -48,7 +48,7 @@ public class MealListFragment extends ListFragment {
 	 * The fragment's current callback object, which is notified of list item
 	 * clicks.
 	 */
-	private Callbacks mCallbacks = sDummyCallbacks;
+	private Callbacks mCallbacks = sOwnCallbacks;
 
 	/**
 	 * The current activated item position. Only used on tablets.
@@ -71,7 +71,7 @@ public class MealListFragment extends ListFragment {
 	 * A dummy implementation of the {@link Callbacks} interface that does
 	 * nothing. Used only when this fragment is not attached to an activity.
 	 */
-	private static Callbacks sDummyCallbacks = new Callbacks() {
+	private static Callbacks sOwnCallbacks = new Callbacks() {
 		@Override
 		public void onItemSelected(String id) {
 		}
@@ -168,7 +168,7 @@ public class MealListFragment extends ListFragment {
 		super.onDetach();
 
 		// Reset the active callbacks interface to the dummy implementation.
-		mCallbacks = sDummyCallbacks;
+		mCallbacks = sOwnCallbacks;
 	}
 
 	@Override

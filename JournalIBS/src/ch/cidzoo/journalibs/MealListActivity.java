@@ -78,4 +78,5 @@ public class MealListActivity extends FragmentActivity
             startActivity(detailIntent);
         }
     }
+    
 }
