@@ -96,7 +96,7 @@ public class MealAdapter extends BaseAdapter {
 				" - " + 
 				Toolbox.time2String(meal.getDate()));
 		
-		// show the location FIXME: it is slowing the display?
+		// show the location FIXME: it is slowing the display, use a workqueue?
 		String buf;
 		try {
 			Address adr = Toolbox.reverseGeocoding(context, meal.getLatitude(), meal.getLongitude());

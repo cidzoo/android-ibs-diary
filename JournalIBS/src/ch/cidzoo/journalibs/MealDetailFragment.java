@@ -7,6 +7,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.database.sqlite.SQLiteCursor;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -29,15 +30,18 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import ch.cidzoo.journalibs.common.Toolbox;
 import ch.cidzoo.journalibs.db.DaoSession;
-import ch.cidzoo.journalibs.db.Ingredient;
-import ch.cidzoo.journalibs.db.IngredientDao;
+import ch.cidzoo.journalibs.db.Ingr;
+import ch.cidzoo.journalibs.db.IngrDao;
 import ch.cidzoo.journalibs.db.Meal;
 import ch.cidzoo.journalibs.db.MealDao;
+import ch.cidzoo.journalibs.db.MealIngr;
+import ch.cidzoo.journalibs.db.MealIngrDao;
 
 /**
  * A fragment representing a single Meal detail screen.
@@ -66,22 +70,33 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 	/**
 	 * Access ingredients
 	 */
-	private IngredientDao mIngrDao;
+	private IngrDao mIngrDao;
+	
+	/**
+	 * Access join entity
+	 */
+	private MealIngrDao mMealIngrDao;
 	
 	/**
 	 * Ingredient adapter for the autoCompleteTextView
 	 */
 	private IngrSearchAdapter mIngrSearchAdapter;
 	
+	/**
+	 * Ingredient adapter for list or meal's ingredients
+	 */
+	private IngrListAdapter mIngrListAdapter;
+	
     /**
      * The meal content this fragment is presenting.
      */
     private Meal mMeal;
 
-	private Button mDatePicker, mTimePicker, mLocationPicker;
-
 	private AutoCompleteTextView mIngrSearch;
+	private ListView mIngrList;
 
+	private Button mDatePicker, mTimePicker, mLocationPicker;
+	
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -96,7 +111,8 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
         // database stuff
         DaoSession daoSession = Toolbox.getDatabaseSession(getActivity());
         mMealDao = daoSession.getMealDao();
-        mIngrDao = daoSession.getIngredientDao();
+        mIngrDao = daoSession.getIngrDao();
+        mMealIngrDao = daoSession.getMealIngrDao();
         
         // TODO: handle edit a meal
         if (getArguments().containsKey(ARG_ITEM_ID)) {
@@ -105,8 +121,10 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 
         	if (selectedMealId != 0)
         		mMeal = mMealDao.load(selectedMealId);
-        	else // init object with default values
-        		mMeal = new Meal(null, new Date(), null, null);        	
+        	else { // init object with default values
+        		mMeal = new Meal(null, new Date(), null, null); 
+        		mMealDao.insert(mMeal);
+        	}
         }
         
         setHasOptionsMenu(true);
@@ -119,6 +137,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
     	View rootView = inflater.inflate(R.layout.fragment_meal_detail, container, false);
  
         mIngrSearch = (AutoCompleteTextView) rootView.findViewById(R.id.searchIngredient);
+        mIngrList = (ListView) rootView.findViewById(R.id.listIngredients);
         
         mDatePicker = (Button) rootView.findViewById(R.id.datePicker);
         mDatePicker.setOnClickListener(this);
@@ -144,23 +163,31 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
         mIngrSearch.setOnItemClickListener(new IngredientSelectListener());
         mIngrSearch.setOnKeyListener(new IngredientEnterKeyListener());
         
+        // prepare meal's ingredients list
+        mIngrListAdapter = new IngrListAdapter(getActivity(), mMeal);
+        mIngrList.setAdapter(mIngrListAdapter);
+        
         return rootView;
     }
     
-    public void addIngredient(TextView v, boolean created) {
+    public void addIngrToMeal(TextView v, Ingr ingr, boolean create) {
     	StringBuilder text = new StringBuilder(v.getText() + " ");
     	
-    	if (created)
+    	if (create) {
     		text.append(v.getResources().getString(R.string.ingredient_created_postfix));
-    	else
+    	} else {
     		text.append(v.getResources().getString(R.string.ingredient_added_postfix));
+    	}
     	
 		Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
 		
     	((TextView) v).setText("");
     	
+    	mMealIngrDao.insert(new MealIngr(null, mMeal.getId(), ingr.getId()));
+    	
     	// notify that data changed to force refresh
-    	mIngrSearchAdapter.notifyDataSetInvalidated();
+    	mIngrSearchAdapter.notifyDataSetChanged();
+    	mIngrListAdapter.notifyDataSetChanged();
     }
 
 	@Override
@@ -174,11 +201,11 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 		Log.i(getTag(), "Button #" + v.getId() + " pressed");
 		switch (v.getId()){
 		case R.id.datePicker:
-			DialogFragment newDateFragment = new DatePickerFragment();
+			DialogFragment newDateFragment = new DatePickerFragment(mMeal.getDate());
 			newDateFragment.show(getFragmentManager(), "datePicker");
 			break;
 		case R.id.timePicker:
-			DialogFragment newTimeFragment = new TimePickerFragment();
+			DialogFragment newTimeFragment = new TimePickerFragment(mMeal.getDate());
 			newTimeFragment.show(getFragmentManager(), "timePicker");
 			break;
 		}
@@ -208,61 +235,83 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 	 * @author romain
 	 *
 	 */
-    class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
+	class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
+		
+		final Calendar c;
 
-            @Override
-            public Dialog onCreateDialog(Bundle savedInstanceState) {
-                    // Use the current date as the default date in the picker
-                    final Calendar c = Calendar.getInstance();
-                    int year = c.get(Calendar.YEAR);
-                    int month = c.get(Calendar.MONTH);
-                    int day = c.get(Calendar.DAY_OF_MONTH);
-                    
-                    // Create a new instance of DatePickerDialog and return it
-                    return new DatePickerDialog(getActivity(), this, year, month, day);
-            }
-            
-            @SuppressWarnings("deprecation")
-			public void onDateSet(DatePicker view, int year, int month, int day) {
-                Date date = mMeal.getDate();
-                date.setYear(year);
-                date.setMonth(month);
-                date.setDate(day);
-                
-            	mMeal.setDate(date); //TODO: really usefull?
-            	mDatePicker.setText(Toolbox.date2String(date));
-            }
-    }
-    
-    /**
-     * Time picker inner class
-     * @author romain
-     *
-     */
-    class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
-            
-            @Override
-            public Dialog onCreateDialog(Bundle savedInstanceState) {
-                    // Use the current time as the default values for the picker
-                    final Calendar c = Calendar.getInstance();
-                    int hour = c.get(Calendar.HOUR_OF_DAY);
-                    int minute = c.get(Calendar.MINUTE);
-                    
-                    // Create a new instance of TimePickerDialog and return it
-                    return new TimePickerDialog(getActivity(), this, hour, minute,
-                    DateFormat.is24HourFormat(getActivity()));
-            }
-            
-            @SuppressWarnings("deprecation")
-			public void onTimeSet(TimePicker view, int hourOfDay, int minutes) {
-            	Date date = mMeal.getDate();
-                date.setHours(hourOfDay);
-                date.setMinutes(minutes);
-                
-            	mMeal.setDate(date); //TODO: really usefull?
-            	mTimePicker.setText(Toolbox.time2String(date));
-            }
-    }
+		public DatePickerFragment() {
+			super();
+			c = Calendar.getInstance();
+		}
+		
+		public DatePickerFragment(Date date) {
+			this();
+			c.setTime(date);
+		}
+
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
+			
+			int year = c.get(Calendar.YEAR);
+			int month = c.get(Calendar.MONTH);
+			int day = c.get(Calendar.DAY_OF_MONTH);
+
+			// Create a new instance of DatePickerDialog and return it
+			return new DatePickerDialog(getActivity(), this, year, month, day);
+		}
+
+		@SuppressWarnings("deprecation")
+		public void onDateSet(DatePicker view, int year, int month, int day) {
+			Date date = mMeal.getDate();
+			date.setYear(year);
+			date.setMonth(month);
+			date.setDate(day);
+
+			mMeal.setDate(date); //TODO: really usefull?
+					mDatePicker.setText(Toolbox.date2String(date));
+		}
+	}
+
+	/**
+	 * Time picker inner class
+	 * @author romain
+	 *
+	 */
+	class TimePickerFragment extends DialogFragment implements TimePickerDialog.OnTimeSetListener {
+
+		final Calendar c;
+		
+		public TimePickerFragment() {
+			super();
+			c = Calendar.getInstance();
+		}
+		
+		public TimePickerFragment(Date date) {
+			this();
+			c.setTime(date);
+		}
+		
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
+			
+			int hour = c.get(Calendar.HOUR_OF_DAY);
+			int minute = c.get(Calendar.MINUTE);
+
+			// Create a new instance of TimePickerDialog and return it
+			return new TimePickerDialog(getActivity(), this, hour, minute,
+					DateFormat.is24HourFormat(getActivity()));
+		}
+
+		@SuppressWarnings("deprecation")
+		public void onTimeSet(TimePicker view, int hourOfDay, int minutes) {
+			Date date = mMeal.getDate();
+			date.setHours(hourOfDay);
+			date.setMinutes(minutes);
+
+			mMeal.setDate(date); //TODO: really usefull?
+					mTimePicker.setText(Toolbox.time2String(date));
+		}
+	}
     
     /**
      * LocationListener inner class
@@ -305,9 +354,11 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
     class IngredientSelectListener implements OnItemClickListener {
 
 		@Override
-		public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
-				long arg3) {
-			addIngredient((TextView) arg1, false);
+		public void onItemClick(AdapterView <? > parent, View view, int position, long id) {
+			Ingr ingr = mIngrDao.load(
+					((SQLiteCursor) parent.getItemAtPosition(position))
+					.getLong(IngrDao.Properties.Id.ordinal));
+			addIngrToMeal((TextView) view, ingr, false);
 		}
     	
     }
@@ -329,8 +380,9 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
     			case KeyEvent.KEYCODE_DPAD_CENTER:
     			case KeyEvent.KEYCODE_ENTER:
     				// insert new ingredient
-    				mIngrDao.insert(new Ingredient(null, ((TextView) v).getText().toString()));
-    				addIngredient((TextView) v, true);
+    				Ingr ingr = new Ingr(null, ((TextView) v).getText().toString());
+    				mIngrDao.insert(ingr);
+    				addIngrToMeal((TextView) v, ingr, true);
     				return true;
     			
     			default:
