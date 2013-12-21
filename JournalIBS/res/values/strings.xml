@@ -23,9 +23,9 @@
     <string name="ingredient_created_postfix">créé et ajouté</string>
     
     
-    <string name="symptom_name_1">Symptôme 1</string>
-    <string name="symptom_name_2">Symptôme 2</string>
-    <string name="symptom_name_3">Symptôme 3</string>
+    <string name="symptom_nausea">Nausées</string>
+    <string name="symptom_colic">Coliques</string>
+    <string name="symptom_diarrhea">Diarrhées</string>
     <string name="action_delete">Supprimer</string>
 
 </resources>

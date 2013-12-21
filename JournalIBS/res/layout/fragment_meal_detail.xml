@@ -49,7 +49,7 @@
 		android:background="@android:color/darker_gray"/>
         
     <Switch
-        android:id="@+id/switchSymptom1"
+        android:id="@+id/switchNausea"
         style="android:switchStyle"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -57,28 +57,27 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="16dp"
-        android:text="@string/symptom_name_1" />
+        android:text="@string/symptom_nausea" />
     
     <Switch
-        android:id="@+id/switchSymptom2"
+        android:id="@+id/switchColic"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        android:text="@string/symptom_name_2" />
+        android:text="@string/symptom_colic" />
     
     <Switch
-        android:id="@+id/switchSymptom3"
+        android:id="@+id/switchDiarrhea"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
-        android:text="@string/symptom_name_3" />
-    
+        android:text="@string/symptom_diarrhea" />
     
    	<View
         android:layout_height="1dp"

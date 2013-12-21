@@ -29,8 +29,11 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.DatePicker;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -49,7 +52,7 @@ import ch.cidzoo.journalibs.db.MealIngrDao;
  * in two-pane mode (on tablets) or a {@link MealDetailActivity}
  * on handsets.
  */
-public class MealDetailFragment extends Fragment implements OnClickListener{
+public class MealDetailFragment extends Fragment implements OnClickListener, OnCheckedChangeListener {
  
 	/**
      * The fragment argument representing the item ID that this fragment
@@ -94,7 +97,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 
 	private AutoCompleteTextView mIngrSearch;
 	private ListView mIngrList;
-
+	private Switch mSymptomNausea, mSymptomColic, mSymptomDiarrhea;
 	private Button mDatePicker, mTimePicker, mLocationPicker;
 	
     /**
@@ -122,7 +125,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
         	if (selectedMealId != 0)
         		mMeal = mMealDao.load(selectedMealId);
         	else { // init object with default values
-        		mMeal = new Meal(null, new Date(), null, null); 
+        		mMeal = new Meal(null, new Date(), null, null, false, false, false); 
         		mMealDao.insert(mMeal);
         	}
         }
@@ -134,10 +137,23 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         
+    	// get root view
     	View rootView = inflater.inflate(R.layout.fragment_meal_detail, container, false);
  
+    	// ingredient search and add
         mIngrSearch = (AutoCompleteTextView) rootView.findViewById(R.id.searchIngredient);
         mIngrList = (ListView) rootView.findViewById(R.id.listIngredients);
+        
+        // symptoms
+        mSymptomNausea = (Switch) rootView.findViewById(R.id.switchNausea);
+        mSymptomNausea.setChecked(mMeal.getNausea());
+        mSymptomNausea.setOnCheckedChangeListener(this);
+        mSymptomColic = (Switch) rootView.findViewById(R.id.switchColic);
+        mSymptomColic.setChecked(mMeal.getColic());
+        mSymptomColic.setOnCheckedChangeListener(this);
+        mSymptomDiarrhea = (Switch) rootView.findViewById(R.id.switchDiarrhea);
+        mSymptomDiarrhea.setChecked(mMeal.getDiarrhea());
+        mSymptomDiarrhea.setOnCheckedChangeListener(this);
         
         mDatePicker = (Button) rootView.findViewById(R.id.datePicker);
         mDatePicker.setOnClickListener(this);
@@ -207,6 +223,22 @@ public class MealDetailFragment extends Fragment implements OnClickListener{
 		case R.id.timePicker:
 			DialogFragment newTimeFragment = new TimePickerFragment(mMeal.getDate());
 			newTimeFragment.show(getFragmentManager(), "timePicker");
+			break;
+		}
+	}
+	
+	@Override
+	public void onCheckedChanged(CompoundButton v, boolean isChecked) {
+		Log.i(getTag(), "Switch #" + v.getId() + " changed");
+		switch (v.getId()){
+		case R.id.switchNausea:
+			mMeal.setNausea(isChecked);
+			break;
+		case R.id.switchColic:
+			mMeal.setColic(isChecked);
+			break;
+		case R.id.switchDiarrhea:
+			mMeal.setDiarrhea(isChecked);
 			break;
 		}
 	}

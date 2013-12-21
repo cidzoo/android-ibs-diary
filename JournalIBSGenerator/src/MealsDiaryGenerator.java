@@ -16,7 +16,7 @@ import de.greenrobot.daogenerator.ToMany;
 public class MealsDiaryGenerator {
 
 	public static void main(String[] args) {
-		Schema schema = new Schema(2, "ch.cidzoo.journalibs.db");
+		Schema schema = new Schema(3, "ch.cidzoo.journalibs.db");
 		
 		/* Ingredient entity */
 		Entity ingr = schema.addEntity("Ingr");
@@ -26,9 +26,12 @@ public class MealsDiaryGenerator {
 		/* Meal entity */
 		Entity meal = schema.addEntity("Meal");
 		meal.addIdProperty();
-		meal.addDateProperty("date");
+		meal.addDateProperty("date").notNull();
 		meal.addDoubleProperty("latitude");
 		meal.addDoubleProperty("longitude");
+		meal.addBooleanProperty("nausea").notNull();
+		meal.addBooleanProperty("colic").notNull();
+		meal.addBooleanProperty("diarrhea").notNull();
 		
 		/* Join entity for Meals and Ingredients */
 		Entity mealIngr = schema.addEntity("MealIngr");

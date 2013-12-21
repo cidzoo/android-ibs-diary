@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import ch.cidzoo.journalibs.common.Toolbox;
 import ch.cidzoo.journalibs.db.IngrDao;
 import ch.cidzoo.journalibs.db.Meal;
 import ch.cidzoo.journalibs.db.MealIngrDao;
@@ -21,6 +22,7 @@ public class IngrListAdapter extends CursorAdapter {
 		super(context, null, 0);
 		
 		mMeal = meal;
+		mDb = Toolbox.getDatabase(context);
 		
 		this.swapCursor(getIngrListCursor());
 	}
