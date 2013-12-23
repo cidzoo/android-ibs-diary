@@ -1,6 +1,8 @@
 package ch.cidzoo.journalibs;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import android.content.Context;
@@ -24,6 +26,18 @@ import ch.cidzoo.journalibs.db.Meal;
  */
 public class MealAdapter extends BaseAdapter {
 
+	/**
+	 * Comparator for meal, used to order them
+	 * @author romain
+	 *
+	 */
+	public class MealComparator implements Comparator<Meal> {
+		@Override
+	    public int compare(Meal o1, Meal o2) {
+	        return o2.getDate().compareTo(o1.getDate());
+		}
+	}
+	
 	/**
 	 * The list of meals
 	 */
@@ -51,10 +65,11 @@ public class MealAdapter extends BaseAdapter {
 		this(context);
 		updateMeals(meals);
 	}
-
+		
 	public void updateMeals(List<Meal> meals) {
 		Toolbox.checkOnMainThread();
 		this.meals = meals;
+		Collections.sort(meals, new MealComparator());
 		notifyDataSetChanged();
 	}
 	
@@ -110,3 +125,5 @@ public class MealAdapter extends BaseAdapter {
 	}
 
 }
+
+

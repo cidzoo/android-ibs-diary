@@ -10,6 +10,9 @@
         android:showAsAction="always" 
         android:icon="@drawable/ic_5_content_picture">   
     </item>
+    <item android:id="@+id/action_reset_db" android:title="@string/action_reset_db" android:showAsAction="never"></item><item android:id="@+id/action_settings" android:title="@string/action_settings" android:showAsAction="never"></item>
+    <item android:id="@+id/action_help" android:title="@string/action_help" android:showAsAction="never"></item>
+    
     
 
 </menu>

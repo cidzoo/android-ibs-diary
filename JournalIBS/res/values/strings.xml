@@ -20,6 +20,13 @@
     <string name="action_edit">Modifier</string>
     <string name="action_show_charts">Indices</string>
     <string name="action_done">Confirmer</string>
+    <string name="action_done_empty">Veuillez ajouter au moins un ingrédient</string>
+    <string name="action_reset_db">Vider les repas</string>
+    <string name="action_reset_db_desc">Voulez-vous vraiment supprimer tout les repas?</string>
+    <string name="action_reset_db_yes">Oui</string>
+    <string name="action_reset_db_no">Non</string>
+    <string name="action_settings">Paramètres</string>
+    <string name="action_help">Aide</string>
     
     <string name="ingredient_search_hint">Ajouter un ingrédient</string>
     <string name="ingredient_added_postfix">ajouté</string>

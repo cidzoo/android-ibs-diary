@@ -51,6 +51,10 @@ import ch.cidzoo.journalibs.db.MealIngrDao;
  * This fragment is either contained in a {@link MealListActivity}
  * in two-pane mode (on tablets) or a {@link MealDetailActivity}
  * on handsets.
+ * 
+ * FIXME: as the meal is created and inserted immediately into the db (greendao limitation),
+ * if the user press the back button instead of the "done" button the meal appears into the 
+ * global list.
  */
 public class MealDetailFragment extends Fragment implements OnClickListener, OnCheckedChangeListener {
  
@@ -249,7 +253,13 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
 		switch(item.getItemId()) {
 		case R.id.action_done:
 			Log.i("onOptionsItemSelected", "button done clicked");
-
+			
+			// cannot save with no ingredients
+			if (mMeal.getMealToIngrs().isEmpty()) {
+				Toast.makeText(getActivity(), getString(R.string.action_done_empty), Toast.LENGTH_LONG).show();
+				return true;
+			}
+			
 			// insert the meal into the DB
 			mMealDao.insertOrReplace(mMeal);
 			
@@ -259,8 +269,6 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
 		}
 		return super.onOptionsItemSelected(item);
 	}
-
-
 
 	/**
 	 * Date picker inner class
