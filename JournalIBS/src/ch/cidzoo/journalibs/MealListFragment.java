@@ -93,14 +93,6 @@ public class MealListFragment extends ListFragment {
 		
 		MealAdapter adapter = new MealAdapter(this.getActivity(), mealDao.loadAll());
 		setListAdapter(adapter);
-
-		setHasOptionsMenu(true);
-	}
-
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.menu_list, menu);
-		super.onCreateOptionsMenu(menu, inflater);
 	}
 
 	@Override
@@ -108,21 +100,6 @@ public class MealListFragment extends ListFragment {
 			ContextMenuInfo menuInfo) {		
 		super.onCreateContextMenu(menu, v, menuInfo);
 		Log.i("onCreateContextMenu", "called");
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		Log.i("JournalIBS", "onOptionsItemSelected");
-
-		switch (item.getItemId()) {
-		case R.id.action_add:
-			mCallbacks.onItemSelected("0");
-			
-			break;
-		}
-		
-		
-		return super.onOptionsItemSelected(item);
 	}
 
 	@Override

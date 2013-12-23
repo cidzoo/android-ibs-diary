@@ -3,6 +3,9 @@
     <string name="app_name">Journal IBS</string>
     <string name="db_name">meals_diary</string>
     
+    <string name="title_charts">Graphiques</string>
+    <string name="title_discomfort_chart">Ce qui pose problème...</string>
+    
     <string name="choose_date">Choisir la date</string>
     <string name="choose_time">Choisir l\'heure</string>
     <string name="choose_location">Choisir le lieu</string>

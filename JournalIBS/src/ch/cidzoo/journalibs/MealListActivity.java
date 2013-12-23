@@ -3,6 +3,10 @@ package ch.cidzoo.journalibs;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 
 /**
@@ -48,11 +52,33 @@ public class MealListActivity extends FragmentActivity
                     .findFragmentById(R.id.meal_list))
                     .setActivateOnItemClick(true);
         }
-
-        // TODO: If exposing deep links into your app, handle intents here.
     }
+    
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu_list, menu);
+		
+		return super.onCreateOptionsMenu(menu);
+	}
+    
+    @Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+    	Log.i("MealListActivity", "onOptionsItemSelected");
 
-    /**
+		switch (item.getItemId()) {
+		case R.id.action_add:
+			onItemSelected("0");
+			break;
+		case R.id.action_show_charts:
+			Intent wellnessChartIntent = new Intent(this, ChartsActivity.class);
+            startActivity(wellnessChartIntent);
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	/**
      * Callback method from {@link MealListFragment.Callbacks}
      * indicating that the item with the given ID was selected.
      */

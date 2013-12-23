@@ -34,6 +34,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MealListActivity" />
         </activity>
+        <activity
+            android:name="ch.cidzoo.journalibs.ChartsActivity"
+            android:label="@string/title_charts"
+            android:windowSoftInputMode="adjustPan"
+            android:parentActivityName=".MealListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MealListActivity" />
+        </activity>
     </application>
 
 </manifest>
