@@ -3,6 +3,8 @@
     <string name="app_name">Journal IBS</string>
     <string name="db_name">meals_diary</string>
     
+    <string name="title_meal_list">Journal des repas</string>
+    <string name="title_meal_detail">Détails du repas</string>
     <string name="title_charts">Graphiques</string>
     <string name="title_discomfort_chart">Ce qui pose problème...</string>
     
@@ -12,10 +14,7 @@
     
     <string name="location_pending" tools:ignore="TypographyEllipsis">Localisation en cours...</string>
     <string name="location_prefix">Près de </string>
-    
-    <string name="title_meal_detail">Détails du repas</string>
-    <string name="meal_prefix">Repas du </string>
-    
+
     <string name="action_add">Ajouter</string>
     <string name="action_edit">Modifier</string>
     <string name="action_delete">Supprimer</string>

@@ -143,11 +143,10 @@ public class MealListAdapter extends BaseAdapter {
 		final Meal meal = (Meal) getItem(position);
 		
 		// show the date
-		dateView.setText(rootView.getResources().getString(R.string.meal_prefix) +
-				" " +
+		dateView.setText(
 				Toolbox.date2String(meal.getDate()) + 
 				" - " + 
-				Toolbox.time2String(meal.getDate()));
+				Toolbox.time2String(meal.getDate()) );
 
 		// show the location 
 		// TODO: use a proper queue to add location to reverseGeocode. Or add a computed string value in DB
