@@ -114,7 +114,6 @@ public class ChartsActivity extends Activity {
 				MealIngr ingrIndex = j.next();
 				Ingr ingr = ingrDao.load(ingrIndex.getIngrId());
 				
-				Log.i("WellnessChartActivity", "ingr=" + ingr.getName() + ", indice=" + meal.getNausea());
 				// insert ingredient into hashtable if don't already exists
 				if (!ingrMap.containsKey(ingr.getName()))
 					ingrMap.put(ingr.getName(), 0);
