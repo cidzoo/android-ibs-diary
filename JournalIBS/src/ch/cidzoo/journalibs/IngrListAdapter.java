@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import ch.cidzoo.journalibs.common.Toolbox;
+import ch.cidzoo.journalibs.db.DaoSession;
+import ch.cidzoo.journalibs.db.Ingr;
 import ch.cidzoo.journalibs.db.IngrDao;
 import ch.cidzoo.journalibs.db.Meal;
 import ch.cidzoo.journalibs.db.MealIngrDao;
@@ -17,12 +19,15 @@ public class IngrListAdapter extends CursorAdapter {
 
 	private Meal mMeal;
 	private SQLiteDatabase mDb;
+	private IngrDao mIngrDao;
 	
 	public IngrListAdapter(Context context, Meal meal) {
 		super(context, null, 0);
 		
 		mMeal = meal;
 		mDb = Toolbox.getDatabase(context);
+		DaoSession daoSession = Toolbox.getDatabaseSession(context);
+		mIngrDao = daoSession.getIngrDao();
 		
 		this.swapCursor(getIngrListCursor());
 	}
@@ -38,9 +43,15 @@ public class IngrListAdapter extends CursorAdapter {
 	public View newView(Context context, Cursor cursor, ViewGroup parent) {
 		
 		final LayoutInflater inflater = LayoutInflater.from(context);
-        final TextView view = (TextView) inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+        final TextView view = (TextView) inflater.inflate(android.R.layout.simple_list_item_activated_1, parent, false);
         
         return view;
+	}
+
+	@Override
+	public Ingr getItem(int position) {
+		Cursor c = (Cursor) super.getItem(position);
+		return mIngrDao.load(c.getLong(2));
 	}
 
 	@SuppressWarnings("deprecation")

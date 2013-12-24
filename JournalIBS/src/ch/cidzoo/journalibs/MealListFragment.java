@@ -99,7 +99,7 @@ public class MealListFragment extends ListFragment {
 		mMealIngrDao = mDaoSession.getMealIngrDao();
 		mIngrDao = mDaoSession.getIngrDao();
 		
-		MealAdapter adapter = new MealAdapter(this.getActivity(), mMealDao.loadAll());
+		MealListAdapter adapter = new MealListAdapter(this.getActivity(), mMealDao.loadAll());
 		setListAdapter(adapter);
 		setHasOptionsMenu(true);
 	}
@@ -121,7 +121,7 @@ public class MealListFragment extends ListFragment {
 			setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
 		}
 		
-		((MealAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
+		((MealListAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
 		registerForContextMenu(getView());
 		
 		ListView listView = getListView();
@@ -142,7 +142,7 @@ public class MealListFragment extends ListFragment {
 				            // let's delete all meals in the db
 				        	mMealDao.deleteAll();
 				        	mMealIngrDao.deleteAll();
-				        	((MealAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
+				        	((MealListAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
 				            break;
 				        }
 				    }
@@ -163,7 +163,7 @@ public class MealListFragment extends ListFragment {
 				        	mMealDao.deleteAll();
 				        	mMealIngrDao.deleteAll();
 				        	mIngrDao.deleteAll();
-				        	((MealAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
+				        	((MealListAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
 				            break;
 				        }
 				    }
@@ -179,7 +179,7 @@ public class MealListFragment extends ListFragment {
 
 	@Override
 	public void onResume() {
-		((MealAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
+		((MealListAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
 		super.onResume();
 	}
 
@@ -257,7 +257,7 @@ public class MealListFragment extends ListFragment {
 	    		selectedItems.remove(position);
 	    	}
             
-	    	mode.setTitle(String.valueOf(selectedItems.size())+" selected");
+	    	mode.setTitle(String.valueOf(selectedItems.size())+" "+getString(R.string.action_context_sel));
 	    	
             /* hide or show edit action if more then one item is selected */
             if(selectedItems.size() > 1)
@@ -276,7 +276,7 @@ public class MealListFragment extends ListFragment {
 	                while ((index = selectedItems.poll()) != null)
 	                	mMealDao.delete((Meal) getListAdapter().getItem(index));
 	                	
-	                ((MealAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
+	                ((MealListAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
 	                mode.finish(); // Action picked, so close the CAB
 	                return true;
 	            default:
@@ -288,7 +288,7 @@ public class MealListFragment extends ListFragment {
 	    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 	        // Inflate the menu for the CAB
 	        MenuInflater inflater = mode.getMenuInflater();
-	        inflater.inflate(R.menu.context_menu_list, menu);
+	        inflater.inflate(R.menu.context_menu_edit, menu);
 	        return true;
 	    }
 

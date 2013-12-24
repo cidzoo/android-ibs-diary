@@ -18,6 +18,8 @@
     
     <string name="action_add">Ajouter</string>
     <string name="action_edit">Modifier</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="action_context_sel">sélectionné(s)</string>
     <string name="action_show_charts">Indices</string>
     <string name="action_done">Confirmer</string>
     <string name="action_done_empty">Veuillez ajouter au moins un ingrédient</string>
@@ -44,6 +46,6 @@
     <string name="symptom_nausea">Nausées</string>
     <string name="symptom_colic">Coliques</string>
     <string name="symptom_diarrhea">Diarrhées</string>
-    <string name="action_delete">Supprimer</string>
+    
 
 </resources>

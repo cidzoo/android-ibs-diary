@@ -24,7 +24,7 @@ import ch.cidzoo.journalibs.db.Meal;
  * @author Romain Maffina
  *
  */
-public class MealAdapter extends BaseAdapter {
+public class MealListAdapter extends BaseAdapter {
 
 	/**
 	 * Comparator for meal, used to order them
@@ -52,7 +52,7 @@ public class MealAdapter extends BaseAdapter {
 	 * MealAdapter default constructor
 	 * @param context
 	 */
-	public MealAdapter(Context context) {
+	public MealListAdapter(Context context) {
 		this.context = context;
 	}
 	
@@ -61,7 +61,7 @@ public class MealAdapter extends BaseAdapter {
 	 * @param context
 	 * @param meals
 	 */
-	public MealAdapter(Context context, List<Meal> meals) {
+	public MealListAdapter(Context context, List<Meal> meals) {
 		this(context);
 		updateMeals(meals);
 	}

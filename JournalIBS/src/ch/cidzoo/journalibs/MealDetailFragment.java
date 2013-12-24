@@ -2,7 +2,9 @@ package ch.cidzoo.journalibs;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -17,6 +19,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,6 +29,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
+import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AutoCompleteTextView;
@@ -46,6 +50,7 @@ import ch.cidzoo.journalibs.db.Meal;
 import ch.cidzoo.journalibs.db.MealDao;
 import ch.cidzoo.journalibs.db.MealIngr;
 import ch.cidzoo.journalibs.db.MealIngrDao;
+import de.greenrobot.dao.query.QueryBuilder;
 
 /**
  * A fragment representing a single Meal detail screen.
@@ -149,6 +154,8 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
         mIngrSearch = (AutoCompleteTextView) rootView.findViewById(R.id.searchIngredient);
         mIngrSearch.setThreshold(1);
         mIngrList = (ListView) rootView.findViewById(R.id.listIngredients);
+        mIngrList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        mIngrList.setMultiChoiceModeListener(new IngrSelectListener());
         
         // symptoms
         mSymptomNausea = (Switch) rootView.findViewById(R.id.switchNausea);
@@ -440,5 +447,87 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
     		return false;
     	}
     }
+    
+    class IngrSelectListener implements MultiChoiceModeListener {
+
+		Queue<Integer> selectedItems = new LinkedList<Integer>();
+	    @Override
+	    public void onItemCheckedStateChanged(ActionMode mode, int position,
+	                                          long id, boolean checked) {
+	        
+	    	Log.i("onItemCheckedStateChanged", "item " + position + " is selected ? " + checked);
+	    	if (checked) {
+	    		selectedItems.add(position);
+	    	} else {
+	    		selectedItems.remove(position);
+	    	}
+            
+	    	mode.setTitle(String.valueOf(selectedItems.size())+" "+getString(R.string.action_context_sel));
+	    }
+
+	    @Override
+	    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+	        // Respond to clicks on the actions in the CAB
+	        switch (item.getItemId()) {
+	            case R.id.action_delete:
+	                Log.i("onActionItemClicked", "item(s) deleted");
+	                Integer index;
+	                while ((index = selectedItems.poll()) != null){
+	                	Ingr ingr = mIngrListAdapter.getItem(index);
+	                	Log.i("MealDetailFragment", "delete " + ingr.getName());
+	                	
+	                	//query for the right jointable row
+	                	QueryBuilder<MealIngr> qb = mMealIngrDao.queryBuilder();
+	                	qb.where(MealIngrDao.Properties.IngrId.eq(ingr.getId()), 
+	                			MealIngrDao.Properties.MealId.eq(mMeal.getId()));
+	                	MealIngr mealIngr = qb.list().get(0);
+	                	 
+	                	mMealIngrDao.delete(mealIngr);
+	                	mIngrListAdapter.notifyDataSetChanged();
+	                	
+	                	// query if they are other usage of this ingr
+	                	qb = mMealIngrDao.queryBuilder();
+	                	qb.where(MealIngrDao.Properties.IngrId.eq(ingr.getId()));
+	    	            List<MealIngr> ingrs = qb.list();
+	    	            
+	    	            // if not delete it
+	    	            if (ingrs.isEmpty())
+	    	            	mIngrDao.delete(ingr);
+	                }
+	                	//TODO
+	                //((IngrListAdapter) mIngrListAdapter).updateMeals(mMealDao.loadAll());
+	                mode.finish(); // Action picked, so close the CAB
+	                return true;
+	            default:
+	                return false;
+	        }
+	    }
+
+	    @Override
+	    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+	        // Inflate the menu for the CAB
+	        MenuInflater inflater = mode.getMenuInflater();
+	        inflater.inflate(R.menu.context_menu_edit, menu);
+	        
+	        // hide edit mode for ingredients
+	        mode.getMenu().findItem(R.id.action_edit).setVisible(false);
+	        
+	        return true;
+	    }
+
+	    @Override
+	    public void onDestroyActionMode(ActionMode mode) {
+	        // Here you can make any necessary updates to the activity when
+	        // the CAB is removed. By default, selected items are deselected/unchecked.
+	    	selectedItems.clear();
+	    }
+
+	    @Override
+	    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+	        // Here you can perform updates to the CAB due to
+	        // an invalidate() request
+	        return false;
+	    }
+	}
     
 }
