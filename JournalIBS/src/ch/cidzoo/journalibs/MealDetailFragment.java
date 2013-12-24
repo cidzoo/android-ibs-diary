@@ -2,6 +2,7 @@ package ch.cidzoo.journalibs;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -146,6 +147,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
  
     	// ingredient search and add
         mIngrSearch = (AutoCompleteTextView) rootView.findViewById(R.id.searchIngredient);
+        mIngrSearch.setThreshold(1);
         mIngrList = (ListView) rootView.findViewById(R.id.listIngredients);
         
         // symptoms
@@ -253,12 +255,13 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
 		switch(item.getItemId()) {
 		case R.id.action_done:
 			Log.i("onOptionsItemSelected", "button done clicked");
-			
-			// cannot save with no ingredients
-			if (mMeal.getMealToIngrs().isEmpty()) {
-				Toast.makeText(getActivity(), getString(R.string.action_done_empty), Toast.LENGTH_LONG).show();
-				return true;
-			}
+
+			//FIXME: not working with new created added ingredient
+//			// cannot save with no ingredients
+//			if (mMeal.getMealToIngrs().isEmpty()) {
+//				Toast.makeText(getActivity(), getString(R.string.action_done_empty), Toast.LENGTH_LONG).show();
+//				return true;
+//			}
 			
 			// insert the meal into the DB
 			mMealDao.insertOrReplace(mMeal);
@@ -266,8 +269,10 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
 			// finish and return
 			getActivity().finish();
 			return true;
+		
+	    default:
+			return super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	/**
@@ -300,15 +305,11 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
 			return new DatePickerDialog(getActivity(), this, year, month, day);
 		}
 
-		@SuppressWarnings("deprecation")
 		public void onDateSet(DatePicker view, int year, int month, int day) {
-			Date date = mMeal.getDate();
-			date.setYear(year);
-			date.setMonth(month);
-			date.setDate(day);
+			c.set(year, month, day);
 
-			mMeal.setDate(date); //TODO: really usefull?
-					mDatePicker.setText(Toolbox.date2String(date));
+			mMeal.setDate(c.getTime()); //TODO: really usefull?
+			mDatePicker.setText(Toolbox.date2String(c.getTime()));
 		}
 	}
 
@@ -342,14 +343,12 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
 					DateFormat.is24HourFormat(getActivity()));
 		}
 
-		@SuppressWarnings("deprecation")
 		public void onTimeSet(TimePicker view, int hourOfDay, int minutes) {
-			Date date = mMeal.getDate();
-			date.setHours(hourOfDay);
-			date.setMinutes(minutes);
+			c.set(Calendar.HOUR_OF_DAY, hourOfDay);
+			c.set(Calendar.MINUTE, minutes);
 
-			mMeal.setDate(date); //TODO: really usefull?
-					mTimePicker.setText(Toolbox.time2String(date));
+			mMeal.setDate(c.getTime()); //TODO: really usefull?
+					mTimePicker.setText(Toolbox.time2String(c.getTime()));
 		}
 	}
     
@@ -421,8 +420,16 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
     			case KeyEvent.KEYCODE_ENTER:
     				// insert new ingredient
     				Ingr ingr = new Ingr(null, ((TextView) v).getText().toString());
-    				mIngrDao.insert(ingr);
-    				addIngrToMeal((TextView) v, ingr, true);
+    				
+    				// but only if not already existing in db
+    				List<Ingr> existing = mIngrDao.queryBuilder().where(IngrDao.Properties.Name.eq(ingr.getName())).list();
+    				if (existing.isEmpty()) 
+    					mIngrDao.insert(ingr);
+    				else
+    					ingr = existing.get(0);
+    				
+    				// link now this ingr with the meal
+    				addIngrToMeal((TextView) v, ingr, existing.isEmpty());
     				return true;
     			
     			default:

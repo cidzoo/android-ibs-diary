@@ -19,7 +19,7 @@ import ch.cidzoo.journalibs.db.Meal;
  * Designed following this proposed best practices for Adapters :
  * http://www.piwai.info/android-adapter-good-practices/
  * 
- * TODO: extends CursorAdapter
+ * TODO: extends CursorAdapter (FIXME: header not update correctly when meal edited)
  * 
  * @author Romain Maffina
  *

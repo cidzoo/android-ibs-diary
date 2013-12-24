@@ -20,6 +20,7 @@ import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.ListView;
 import ch.cidzoo.journalibs.common.Toolbox;
 import ch.cidzoo.journalibs.db.DaoSession;
+import ch.cidzoo.journalibs.db.IngrDao;
 import ch.cidzoo.journalibs.db.Meal;
 import ch.cidzoo.journalibs.db.MealDao;
 import ch.cidzoo.journalibs.db.MealIngrDao;
@@ -41,6 +42,7 @@ public class MealListFragment extends ListFragment {
 	private DaoSession mDaoSession;
 	private MealDao mMealDao;
 	private MealIngrDao mMealIngrDao;
+	private IngrDao mIngrDao;
 
 	/**
 	 * The serialization (saved instance state) Bundle key representing the
@@ -95,6 +97,7 @@ public class MealListFragment extends ListFragment {
 		mDaoSession = Toolbox.getDatabaseSession(getActivity());
 		mMealDao = mDaoSession.getMealDao();
 		mMealIngrDao = mDaoSession.getMealIngrDao();
+		mIngrDao = mDaoSession.getIngrDao();
 		
 		MealAdapter adapter = new MealAdapter(this.getActivity(), mMealDao.loadAll());
 		setListAdapter(adapter);
@@ -130,7 +133,7 @@ public class MealListFragment extends ListFragment {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		
 		switch(item.getItemId()) {
-			case R.id.action_reset_db:
+			case R.id.action_reset_meals:
 				DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 				    @Override
 				    public void onClick(DialogInterface dialog, int which) {
@@ -145,8 +148,30 @@ public class MealListFragment extends ListFragment {
 				    }
 				};
 				AlertDialog.Builder ab = new AlertDialog.Builder(this.getActivity());
-				    ab.setMessage(getString(R.string.action_reset_db_desc)).setPositiveButton(getString(R.string.action_reset_db_yes), dialogClickListener)
-				        .setNegativeButton(getString(R.string.action_reset_db_no), dialogClickListener).show();
+			    ab.setMessage(getString(R.string.action_reset_meals_desc))
+			    	.setPositiveButton(getString(R.string.action_reset_meals_yes), dialogClickListener)
+			        .setNegativeButton(getString(R.string.action_reset_meals_no), dialogClickListener).show();
+				break;
+				
+			case R.id.action_reset_all:
+				dialogClickListener = new DialogInterface.OnClickListener() {
+				    @Override
+				    public void onClick(DialogInterface dialog, int which) {
+				        switch (which){
+				        case DialogInterface.BUTTON_POSITIVE:
+				            // let's delete all meals in the db
+				        	mMealDao.deleteAll();
+				        	mMealIngrDao.deleteAll();
+				        	mIngrDao.deleteAll();
+				        	((MealAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
+				            break;
+				        }
+				    }
+				};
+				ab = new AlertDialog.Builder(this.getActivity());
+			    ab.setMessage(getString(R.string.action_reset_all_desc))
+			    	.setPositiveButton(getString(R.string.action_reset_all_yes), dialogClickListener)
+			        .setNegativeButton(getString(R.string.action_reset_all_no), dialogClickListener).show();
 				break;
 		}
 		return super.onOptionsItemSelected(item);

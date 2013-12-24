@@ -74,7 +74,12 @@ public class MealListActivity extends FragmentActivity
 			Intent wellnessChartIntent = new Intent(this, ChartsActivity.class);
             startActivity(wellnessChartIntent);
 			break;
+	    case R.id.action_help:
+            HelpDialogFragment helpDialog = new HelpDialogFragment();
+            helpDialog.show(getFragmentManager(), "fragment_help");
+            return true;
 		}
+		
 		return super.onOptionsItemSelected(item);
 	}
 
