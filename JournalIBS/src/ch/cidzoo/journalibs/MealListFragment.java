@@ -1,6 +1,8 @@
 package ch.cidzoo.journalibs;
 
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import android.app.Activity;
@@ -23,6 +25,7 @@ import ch.cidzoo.journalibs.db.DaoSession;
 import ch.cidzoo.journalibs.db.IngrDao;
 import ch.cidzoo.journalibs.db.Meal;
 import ch.cidzoo.journalibs.db.MealDao;
+import ch.cidzoo.journalibs.db.MealIngr;
 import ch.cidzoo.journalibs.db.MealIngrDao;
 
 /**
@@ -273,8 +276,20 @@ public class MealListFragment extends ListFragment {
 	            case R.id.action_delete:
 	                Log.i("onActionItemClicked", "item(s) deleted");
 	                Integer index;
-	                while ((index = selectedItems.poll()) != null)
-	                	mMealDao.delete((Meal) getListAdapter().getItem(index));
+	                while ((index = selectedItems.poll()) != null) {
+	                	Meal m = (Meal) getListAdapter().getItem(index);
+	                	
+	                	// delete all rows in joint table that concerns this meal
+	                	List<MealIngr> ingrs = m.getMealToIngrs();
+	                	Iterator<MealIngr> i = ingrs.iterator();
+	                	while (i.hasNext()) {
+	                		MealIngr ingr = i.next();
+	                		mMealIngrDao.delete(ingr);
+	                	}
+	                	
+	                	// delete the meal itself
+	                	mMealDao.delete(m);
+	                }
 	                	
 	                ((MealListAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
 	                mode.finish(); // Action picked, so close the CAB

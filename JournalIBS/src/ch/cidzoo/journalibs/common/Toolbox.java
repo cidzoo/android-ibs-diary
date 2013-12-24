@@ -78,7 +78,7 @@ public class Toolbox {
 	}
 	
 	public static String time2String(Date date) {
-		DateFormat df = DateFormat.getTimeInstance(DateFormat.MEDIUM);
+		DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT);
 		return df.format(date);
 	}
 	
