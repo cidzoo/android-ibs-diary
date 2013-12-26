@@ -315,7 +315,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
 		public void onDateSet(DatePicker view, int year, int month, int day) {
 			c.set(year, month, day);
 
-			mMeal.setDate(c.getTime()); //TODO: really usefull?
+			mMeal.setDate(c.getTime());
 			mDatePicker.setText(Toolbox.date2String(c.getTime()));
 		}
 	}
@@ -354,7 +354,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
 			c.set(Calendar.HOUR_OF_DAY, hourOfDay);
 			c.set(Calendar.MINUTE, minutes);
 
-			mMeal.setDate(c.getTime()); //TODO: really usefull?
+			mMeal.setDate(c.getTime());
 					mTimePicker.setText(Toolbox.time2String(c.getTime()));
 		}
 	}
@@ -494,8 +494,7 @@ public class MealDetailFragment extends Fragment implements OnClickListener, OnC
 	    	            if (ingrs.isEmpty())
 	    	            	mIngrDao.delete(ingr);
 	                }
-	                	//TODO
-	                //((IngrListAdapter) mIngrListAdapter).updateMeals(mMealDao.loadAll());
+
 	                mode.finish(); // Action picked, so close the CAB
 	                return true;
 	            default:
