@@ -30,6 +30,8 @@
     <string name="action_reset_all_desc">Voulez-vous vraiment supprimer tout les ingrédients ainsi que les repas?</string>
     <string name="action_reset_all_yes">Oui</string>
     <string name="action_reset_all_no">Non</string>
+    <string name="action_backup">Sauvegarder</string>
+    <string name="action_restore">Restaurer</string>
     <string name="action_help">Aide</string>
     <string name="action_help_body">Cette application permet, au travers d\'une 
         journalisation quotidienne de tous les repas, de mettre en évidence les 

@@ -11,7 +11,9 @@
         android:icon="@drawable/ic_5_content_picture">   
     </item>
     <item android:id="@+id/action_reset_meals" android:title="@string/action_reset_meals" android:showAsAction="never"></item>
-    <item android:id="@+id/action_reset_all" android:title="@string/action_reset_all" android:showAsAction="never"></item><item android:id="@+id/action_help" android:title="@string/action_help" android:showAsAction="never"></item>
+    <item android:id="@+id/action_reset_all" android:title="@string/action_reset_all" android:showAsAction="never"></item>
+    <item android:id="@+id/action_backup" android:showAsAction="never" android:title="@string/action_backup"></item>
+    <item android:id="@+id/action_restore" android:title="@string/action_restore" android:showAsAction="never"></item><item android:id="@+id/action_help" android:title="@string/action_help" android:showAsAction="never"></item>
     
     
     

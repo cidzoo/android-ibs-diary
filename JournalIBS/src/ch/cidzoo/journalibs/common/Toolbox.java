@@ -1,6 +1,10 @@
 package ch.cidzoo.journalibs.common;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
@@ -10,7 +14,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.Environment;
 import android.os.Looper;
+import android.widget.Toast;
 import ch.cidzoo.journalibs.BuildConfig;
 import ch.cidzoo.journalibs.R;
 import ch.cidzoo.journalibs.db.DaoMaster;
@@ -70,6 +76,64 @@ public class Toolbox {
 		//helper.onUpgrade(db, db.getVersion(), db.getVersion()+1); //FIXME: devel
 		DaoMaster daoMaster = new DaoMaster(db);
 		return daoMaster.newSession();
+	}
+	
+	public static void exportDB(Context context, SQLiteDatabase db) {
+	    try {
+	        File sd = Environment.getExternalStorageDirectory();
+	        File data = Environment.getDataDirectory();
+
+	        if (sd.canWrite()) {
+	        	
+	        	String currentDBPath = db.getPath();
+                String backupDBPath = context.getExternalFilesDir(null).getAbsolutePath();
+                File currentDB = new File(currentDBPath);
+                File backupDB = new File(backupDBPath, currentDB.getName());
+
+	            @SuppressWarnings("resource")
+				FileChannel src = new FileInputStream(currentDB).getChannel();
+	            @SuppressWarnings("resource")
+				FileChannel dst = new FileOutputStream(backupDB).getChannel();
+	            dst.transferFrom(src, 0, src.size());
+	            src.close();
+	            dst.close();
+	            Toast.makeText(context.getApplicationContext(), "Backup Successful!",
+	                    Toast.LENGTH_SHORT).show();
+
+	        }
+	    } catch (Exception e) {
+
+	        Toast.makeText(context.getApplicationContext(), "Backup Failed!", Toast.LENGTH_SHORT)
+	                .show();
+
+	    }
+	}
+	
+	public static void importDB(Context context, SQLiteDatabase db) {
+		try {
+			File sd = Environment.getExternalStorageDirectory();
+			File data = Environment.getDataDirectory();
+			if (sd.canWrite()) {
+	        	String currentDBPath = db.getPath();
+                String backupDBPath = context.getExternalFilesDir(null).getAbsolutePath();
+                File backupDB = new File(currentDBPath);
+                File currentDB = new File(backupDBPath, backupDB.getName());
+
+				FileChannel src = new FileInputStream(currentDB).getChannel();
+				FileChannel dst = new FileOutputStream(backupDB).getChannel();
+				dst.transferFrom(src, 0, src.size());
+				src.close();
+				dst.close();
+				Toast.makeText(context.getApplicationContext(), "Import Successful!",
+						Toast.LENGTH_SHORT).show();
+
+			}
+		} catch (Exception e) {
+
+			Toast.makeText(context.getApplicationContext(), "Import Failed!", Toast.LENGTH_SHORT)
+			.show();
+
+		}
 	}
 	
 	public static String date2String(Date date) {

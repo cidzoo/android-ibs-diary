@@ -176,6 +176,15 @@ public class MealListFragment extends ListFragment {
 			    	.setPositiveButton(getString(R.string.action_reset_all_yes), dialogClickListener)
 			        .setNegativeButton(getString(R.string.action_reset_all_no), dialogClickListener).show();
 				break;
+			
+			case R.id.action_backup:
+				Toolbox.exportDB(getActivity(), mDaoSession.getDatabase());
+				break;
+				
+			case R.id.action_restore:
+				Toolbox.importDB(getActivity(), mDaoSession.getDatabase());
+				((MealListAdapter) getListAdapter()).updateMeals(mMealDao.loadAll());
+				break;
 		}
 		return super.onOptionsItemSelected(item);
 	}
